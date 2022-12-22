@@ -10,10 +10,11 @@ function createDb(){
     if [[ $name = "" ]];then
         echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
 
-    #------with space or contain spectial character
-    #elif [[ $name = *[ "~" "!" "@"  "$" "%" "^" "&" "*" "">" "<" "?" "L" ":" "'" "{" "}" '"' "|" ]* ]]
-    # elif [ $name != *[ " " ]* ];then
-    #     echo -e "\033[41m Database Name can't contain Spaces \033[m" #red
+    elif [[ $name =~ [/.:\|\-$%*] ]]; then
+		echo -e "\e[41mYou can't enter these characters => /.:\|\-$%* \e[0m"
+    
+    # elif [[ $name =~ *[ "" ]* ]]; then
+    #      echo -e "\033[41m Database Name can't contain Spaces \033[m" #red
    #----------------------------    
     
     elif [ -e $name ];then 
@@ -86,13 +87,13 @@ function connectDB(){
     if [ -d $name ] ; then 
         cd ./$name                     
         pwd
-        echo -e "\033[42m Connection Done Sucessfully \033[m"  #green
+        echo -e "\033[42m Connection Done Sucessfully ^_^ \033[m"  #green
         echo "------------------"
         secondScreen;        
         #-----------------------------
 
     else 
-        echo -e " \033[41m Sorry DataBase Not Exit \033[m"
+        echo -e " \033[41m Sorry DataBase Not Exist \033[m"
         
     fi
 
@@ -100,7 +101,36 @@ function connectDB(){
 }
 #---------------------------Ask for MetaData----------------------------------------------
 
-function metaData(){
+# function metaData(){
+
+#     read -p "Enter Number of Colunms You Want: " $numCol
+#     count=1
+#     delimeter=":"
+#     if (( $numCol == [1-9][0-9]* ));then  
+#         for [ $count -eq $numCol ]
+#         do
+#            read -p "Enter Name of Colunm No.$1: " $colName
+#            echo -e "Type of Column: $colName"
+#            select type in INT STR 
+#            do
+#              case $type in
+
+#              INT )
+#                 colType="int"
+#                 break
+#              ;;
+#              STR )
+#                 colType="str"
+#                 break
+
+#              ;;
+#              * )
+#                 echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2: \033[m" #red
+
+#              ;;
+#              esac
+
+#            done
 
     read -p "Enter Number of Colunms You Want: " $numCol
     count=1
@@ -135,7 +165,8 @@ function metaData(){
         done
 
 
-}
+
+# }
 
 
 #---------------------------Create Table--------------------------------------------------
@@ -274,9 +305,9 @@ function mainMenu(){
 
 function secondScreen(){
 
-    Back=0
+    Back="0"
 
-    while (( $Back != 1 )) 
+    while [[ $Back != "1" ]]  
     do  
 
         select i in  CreateTB  DropTB ListTB InsertInTB  SelectFromTB  DeleteFromTB  UpdateFromTB Back
@@ -322,9 +353,12 @@ function secondScreen(){
                 ;;
                 #----------------------------------------
                 Back )
-                Back=1
-                cd ..
-                mainMenu;
+                    Back="1"
+                    echo "Back"
+                    cd ..
+                    break
+                    mainMenu;
+                    
                 
                 ;;
                 *)
