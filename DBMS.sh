@@ -103,6 +103,37 @@ function connectDB(){
 function metaData(){
 
     read -p "Enter Number of Colunms You Want: " $numCol
+    count=1
+    delimeter=":"
+    if (( $numCol == [1-9][0-9]* ));then  
+        for [ $count -eq $numCol ]
+        do
+           read -p "Enter Name of Colunm No.$1: " $colName
+           echo -e "Type of Column: $colName"
+           select type in INT STR 
+           do
+             case $type in
+
+             INT )
+                colType="int"
+                break
+             ;;
+             STR )
+                colType="str"
+                break
+
+             ;;
+             * )
+                echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2: \033[m" #red
+
+             ;;
+             esac
+
+           done
+
+        
+        done
+
 
 }
 
