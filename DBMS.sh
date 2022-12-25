@@ -3,25 +3,25 @@
 
 
 function createDb(){
-    pwd
+    
 
-    read -p "Enter DataBase Name You Want To Create : " name 
+    read -p "Enter DataBase Name You Want To Create : " DbName 
 
-    if [[ $name = "" ]];then
+    if [[ $DbName = "" ]];then
         echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
 
-    elif [[ $name =~ *[/.:\|\-$%*';']* ]]; then
+    elif [[ $DbName =~ *[/.:\|\-$%*';']* ]]; then
 		echo -e "\e[41m DataBase Name can't contain special characters => /.:\|\-$%*; \e[0m"
     
-    # elif [[ $name =~ *[ "" ]* ]]; then
-    #      echo -e "\033[41m Database Name can't contain Spaces \033[m" #red
+    elif [[ $Tbname == *" "* ]];then
+        echo -e "\033[41m DataBase Name can't contain spaces \033[m" #red
    #----------------------------    
     
-    elif [ -e $name ];then 
+    elif [ -e $DbName ];then 
         echo -e "\033[43m Sorry Please Enter Another Name This Is Exist ~_~ \033[m" #yellow
 
-    elif [[ $name =~ ^[a-zA-Z] ]];then
-        mkdir $name
+    elif [[ $DbName =~ ^[a-zA-Z] ]];then
+        mkdir $DbName
         echo -e "\033[42m DataBase Created Sucessfully ^_^ \033[m" #green
     else
         echo -e "\033[41m Database Name can't start with numbers or special characters \033[m" #red
@@ -110,94 +110,106 @@ function connectDB(){
 #---------------------------Create Table--------------------------------------------------
 
 function createTB(){
-                
-                read -p "Enter Table Name You Want To Create : " Tbname 
-                if [[ $Tbname = "" ]];then
-                    echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
 
                 
-                elif [ -e $Tbname ];then 
-                    echo -e "\033[43m Sorry Please Enter Another Name This Is Exist ~_~ \033[m" #yellow
+    read -p "Enter Table Name You Want To Create : " Tbname 
+    if [[ $Tbname = " " ]];then
+        echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
+
+    
+    elif [ -e $Tbname ];then 
+        echo -e "\033[43m Sorry Please Enter Another Name This Is Exist ~_~ \033[m" #
+
+    # elif [[ $Tbname == $DbName ]];then
+    #     echo -e "\033[43m Sorry It's Name of DataBase, Please Enter Another  ~_~ \033[m" #
+        
+    elif [[ $Tbname == *" "* ]];then
+        echo -e "\033[41m Table Name can't contain spaces \033[m" #red
+        
+    
+    elif [[ $Tbname =~ ^[a-zA-Z] ]];then
+        
+
+        touch $Tbname
+        touch metadata_$Tbname
+
+        read -p "Enter Number of Columns You want : " colsNum
+        delimeter=":"
+        lineDel="\n"
+        pk=""
+        metaData="ColumName"$delimeter"DataType"$delimeter"PrimaryKey"
+        while [[ $colsNum =~ ^[1-90-9] ]]
+        do
+            
+            for ((i=1 ;i<=1$colsNum; (i++) ))
+            do
+                read -p "Name of Column No.$i: " colName
                 
-                elif [[ $Tbname =~ ^[a-zA-Z] ]];then
-                    
-
-                    touch $Tbname
-                    touch metadata_$Tbname
-
-                    read -p "Enter Number of Columns You want : " colsNum
-                    delimeter=":"
-                    lineDel="\n"
-                    pk=""
-                    metaData="ColumName"$delimeter"DataType"$delimeter"PrimaryKey"
-                    if [[ $colsNum =~ ^[1-9]+$colsNum  ]];then
-                        for (( i=1; i <= $colsNum ; i++ ))
-                        do
-                            read -p "Name of Column No.$i: " colName
-                            
-                            echo -e "Type of Column $colName: "
-                            select ch in INT STR
-                            do
-                                case $ch in
-                                    INT )
-                                    colType="int";
-                                    break                               
-                                    ;;
-                                    INT ) 
-                                    colType="str";
-                                    break
-                                    ;;
-                                    * )
-                                    echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2: \033[m" #red
-                                    ;;
-                                esac
-                            done
-                            
-                            if [[ $pk == "" ]]; then
-                                echo -e "Make PrimaryKey ? "
-                                select choice in YES NO
-                                do
-                                    case $choice in
-                                    YES ) 
-                                    pk="PK";
-                                    metaData+=$lineDel$colName$delimeter$colType$delimeter$pk;
-                                    break
-                                    ;;
-                                    
-                                    NO )
-                                        metaData+=$lineDel$colName$delimeter$colType$delimeter""
-                                    break
-                                    ;;
-                                    
-                                    * ) 
-                                    echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2 : \033[m" #red
-                                    esac
-                                done
-                            else
-                                metaData+=$rSep$colName$sep$colType$sep""
-                            fi
-                            
-                            if [[ $count == $colsNum ]]; then
-                                temp=$temp$colName
-                            else
-                                temp=$temp$colName$sep
-                            fi
-                        done
+                echo -e "Type of Column $colName: "
+                select ch in INT STR
+                do
+                    case $ch in
+                        INT )
+                        colType="int";
+                        break                               
+                        ;;
+                        INT ) 
+                        colType="str";
+                        break
+                        ;;
+                        * )
+                        echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2: \033[m" #red
+                        ;;
+                    esac
+                done
+                
+                if [[ $pk == "" ]]; then
+                    echo -e "Make PrimaryKey ? "
+                    select choice in YES NO
+                    do
+                        case $choice in
+                        YES ) 
+                        pk="PK";
+                        metaData+=$lineDel$colName$delimeter$colType$delimeter$pk;
+                        break
+                        ;;
                         
-                        echo -e $metaData  >> metadata_$Tbname
-                        echo -e $temp >> $Tbname
-                        if [[ $? == 0 ]];then
-                           echo -e "\033[42m Table Created  Sucessfully ^_^ \033[m" #green
-                           secondScreen;
-
-                        fi
-
-                    fi      
-
+                        NO )
+                            metaData+=$lineDel$colName$delimeter$colType$delimeter""
+                        break
+                        ;;
+                        
+                        * ) 
+                        echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2 : \033[m" #red
+                        esac
+                    done
                 else
-                    echo -e "\033[41m Table Name can't start with numbers or special characters \033[m" #red
+                    metaData+=$rSep$colName$sep$colType$sep""
                 fi
-                echo "------------------"
+                
+                if [[ $count == $colsNum ]]; then
+                    temp=$temp$colName
+                else
+                    temp=$temp$colName$sep
+                fi
+            done
+            
+            echo -e $metaData  >> metadata_$Tbname
+            echo -e $temp >> $Tbname
+            if [[ $? == 0 ]];then
+                echo -e "\033[42m Table Created  Sucessfully ^_^ \033[m" #green
+                secondScreen;
+
+            fi
+
+        
+
+        done      
+
+    else
+        echo -e "\033[41m Table Name can't start with numbers or special characters \033[m" #red
+    fi
+    echo "------------------"
 
 
 }
