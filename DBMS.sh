@@ -321,47 +321,58 @@ function selectTB(){
 
 #---------------Insert Into Table----------------------
 
-function insertInTB(){
-    pwd 
-    read -p "Enter Table Name: " tbname
-    if ! [[ -f $tbname ]];then
-        echo -e "\033[41m Sorry Table Not Exist \033[m"
+# function insertInTB(){
+#     pwd 
+#     read -p "Enter Table Name: " tbname
+#     if ! [[ -f $tbname ]];then
+#         echo -e "\033[41m Sorry Table Not Exist \033[m"
 
-    fi      
-    numCols=$(awk -F : '{ 
-        print (NF)
-    }' ./$tbname)
+#     fi      
+#     numCols=$(awk -F : '{ 
+#         print (NF)
+#     }' ./$tbname)
 
-    declare -A NameofCols
-    NameofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
-    {
-        print ($1)
-    }
-    ' )
-    declare -A TypeofCols
-    TypeofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
-    {
-        print ($2)
-    }
-    ' )
+#     declare -A NameofCols
+#     NameofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
+#     {
+#         print ($1)
+#     }
+#     ' )
+#     declare -A TypeofCols
+#     TypeofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
+#     {
+#         print ($2)
+#     }
+#     ' )
 
-    # numColumns=$(head -1 $tbname | awk -F : '
-    # {
-    #     print NF
-    # }
-    # ' )
+#     # numColumns=$(head -1 $tbname | awk -F : '
+#     # {
+#     #     print NF
+#     # }
+#     # ' )
 
-    for ((i=1 ;i<=$numCols-1; (i++) ))
-    do
-       read -p "Enter value of ${NameofCols[$i]} with datatype  ${TypeofCols[$i]} : " dataRecord
-       dataRecord=$dataRecord$delimeter
-       echo $dataRecord >>$tbname
+#     for ((i=1 ;i<=$numCols-1; (i++) ))
+#     do
+#        read -p "Enter value of ${NameofCols[$i]} with datatype  ${TypeofCols[$i]} : " dataRecord
+#        dataRecord=$dataRecord$delimeter
+#        echo $dataRecord >>$tbname
     
-    done      
+#     done      
 
+# }
+#------------------insert table----------------
+function insertTB(){
+    echo "this is all tables"
+    ls
+    read -p "Enter Table Name : " tbname
+    if ! [[ -f $tbname ]]; then 
+        echo "Table $tbname isn't existed "
 
-
-
+    elif [ -f $tbname ]; then   
+    cat metadata_$Tbname | awk -F : '{ print "enter value of $1 , type = $2" }'
+         echo $values >> $db_name/$tableName
+    
+    fi
 }
 
 #----------------DeleteFromTB----------------------------
@@ -511,7 +522,8 @@ function secondScreen(){
                 ;;
 
                 InsertInTB )
-                   insertInTB;
+                   
+                   insertTB;
 
                 ;;
                 #----------------------------------------------
