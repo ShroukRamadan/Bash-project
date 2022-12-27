@@ -198,10 +198,10 @@ function createTB(){
                     metaData+=$lineDel$colName$delimeter$colType$delimeter""
                 fi
                 
-                if [[ $count == $colsNum ]]; then
-                    temp=$temp$colName
-                else
+                if [[ $i == $colsNum ]]; then
                     temp=$temp$colName$delimeter
+                else
+                    temp=$temp$colName                    
                 fi
             done
             
@@ -209,11 +209,11 @@ function createTB(){
             touch metadata_$Tbname
             echo -e $metaData  >> metadata_$Tbname
             echo -e $temp >> $Tbname
-            if [[ $? == 0 ]];then
-                echo -e "\033[42m Table Created  Sucessfully ^_^ \033[m" #green
-                secondScreen;
+            #if [[ $? == 0 ]];then
+            echo -e "\033[42m Table Created  Sucessfully ^_^ \033[m" #green
+            secondScreen;
 
-            fi
+            #fi
         
         fi    
 
@@ -276,22 +276,86 @@ function listTB(){
 #---------------Insert Into Table----------------------
 
 function insertInTB(){
-    pwd
-    read -p "Enter Table Name:" $tbname
-    if [[ -z $tbname ]];then
-        numCols=$( awk 'END{print NR-1}' metadata_$tbname )
-        for (( i=1 ;i<=$numCols; (i++) ));
-        do
-             echo "x"
-        done
+    pwd 
+    read -p "Enter Table Name: " tbname
+    if ! [[ -f $tbname ]];then
+        echo -e "\033[41m Sorry Table Not Exist \033[m"
+
+    fi      
+    numCols=$(awk -F : '{ 
+        print (NF)
+    }' ./$tbname)
+
+    declare -A NameofCols
+    NameofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
+    {
+        print ($1)
+    }
+    ' )
+    declare -A TypeofCols
+    TypeofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
+    {
+        print ($2)
+    }
+    ' )
+
+    # numColumns=$(head -1 $tbname | awk -F : '
+    # {
+    #     print NF
+    # }
+    # ' )
+
+    for ((i=1 ;i<=$numCols-1; (i++) ))
+    do
+       read -p "Enter value of ${NameofCols[$i]} with datatype  ${TypeofCols[$i]} : " dataRecord
+       echo dataRecord >>$tbname
+    
+    done      
+
+
+
+
+}
+
+#----------------DeleteFromTB----------------------------
+function deleteAll(){
+
+
+}
+
+function deleteFromTB(){
+    read -p "Enter Table Name: " tbname
+    if ![[ -f tbname ]];then
+        echo -e "\033[41m Sorry Table Not Exist \033[m"
     else
-        echo -e " \033[41m Sorry Table Not Exist \033[m"
 
-        
+        echo "---------------------"
+        select option in DeleteAll DeleteColumn DaleteRecord
+        do
+            case $option in 
+            DeleteAll )
+              sed -i '2,$d' ./$tbname
+            ;;
+            DeleteColumn )
 
+            ;;
+            DaleteRecord )
+
+            ;;
+
+            * )
+                echo -e "\033[41m Wrong Choice, Please Enter Number From 1 to 3 : \033[m" #red
+
+            ;;
+            esac 
+
+        done
+         
 
 
     fi
+
+
 
 
 }
@@ -396,7 +460,8 @@ function secondScreen(){
                     
                 ;;
                 #---------------------------------------
-                DeleteFromTB )                   
+                DeleteFromTB ) 
+                  deleteAll;                  
                 ;;
                 #---------------------------------------
                 UpdateFromTB )
