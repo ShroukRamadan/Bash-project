@@ -95,8 +95,11 @@ function connectDB(){
         pwd
         echo -e "\033[42m Connection Done Sucessfully ^_^ \033[m"  #green
         echo "------------------"
+        export DBName=$name
+        # $PS3="MySql@$name>>"
+        # echo "$PS3"
         secondScreen;
-        #PS3= "$name >>"        
+             
         #-----------------------------
     else 
         echo -e " \033[41m Sorry DataBase Not Exist \033[m"
@@ -109,9 +112,7 @@ function connectDB(){
 
 #---------------------------Create Table--------------------------------------------------
 
-function createTB(){
-
-                
+function createTB(){                
     read -p "Enter Table Name You Want To Create : " Tbname 
     if [[ $Tbname = " " ]];then
         echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
@@ -120,28 +121,22 @@ function createTB(){
     elif [ -e $Tbname ];then 
         echo -e "\033[43m Sorry Please Enter Another Name This Is Exist ~_~ \033[m" #
 
-    # elif [[ $Tbname == $DbName ]];then
-    #     echo -e "\033[43m Sorry It's Name of DataBase, Please Enter Another  ~_~ \033[m" #
+    elif [[ $Tbname == $DBName ]];then
+        echo -e "\033[43m Sorry It's Name of DataBase, Please Enter Another  ~_~ \033[m" #
         
     elif [[ $Tbname == *" "* ]];then
         echo -e "\033[41m Table Name can't contain spaces \033[m" #red
         
     
     elif [[ $Tbname =~ ^[a-zA-Z] ]];then
-        
-
-        touch $Tbname
-        touch metadata_$Tbname
-
+               
         read -p "Enter Number of Columns You want : " colsNum
         delimeter=":"
         lineDel="\n"
         pk=""
         metaData="ColumName"$delimeter"DataType"$delimeter"PrimaryKey"
-        while [[ $colsNum =~ ^[1-90-9] ]]
-        do
-            
-            for ((i=1 ;i<=1$colsNum; (i++) ))
+        if [[ $colsNum =~ ^[1-90-9] ]];then        
+            for ((i=1 ;i<=$colsNum; (i++) ))
             do
                 read -p "Name of Column No.$i: " colName
                 
@@ -159,9 +154,11 @@ function createTB(){
                         ;;
                         * )
                         echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2: \033[m" #red
+
                         ;;
                     esac
-                done
+
+                done       
                 
                 if [[ $pk == "" ]]; then
                     echo -e "Make PrimaryKey ? "
@@ -194,6 +191,8 @@ function createTB(){
                 fi
             done
             
+            touch $Tbname  
+            touch metadata_$Tbname
             echo -e $metaData  >> metadata_$Tbname
             echo -e $temp >> $Tbname
             if [[ $? == 0 ]];then
@@ -201,10 +200,9 @@ function createTB(){
                 secondScreen;
 
             fi
-
         
+        fi    
 
-        done      
 
     else
         echo -e "\033[41m Table Name can't start with numbers or special characters \033[m" #red
@@ -266,29 +264,24 @@ function listTB(){
 
 
 function mainMenu(){
-
-
-
     EXIT="0"
     while [[ $EXIT != "1" ]] 
-    do  
+    do 
+        
         select i in CreateDB ListDB ConnectDB DropDB Exit
         do
+            export PS3="MySql"
+            echo "$PS3>>"
             case $i in
             
                 CreateDB )
 
                     createDb;
-
-
                 ;;
     
                 #-------------------------------------------------------
                 DropDB )
-
-                    dropDB;
-                        
-                
+                    dropDB;                
                 ;;
                 #-------------------------------------------------------------
                 ListDB )
@@ -331,10 +324,11 @@ function secondScreen(){
     Back="0"
 
     while [[ $Back != "1" ]]  
-    do  
-
+    do 
         select i in  CreateTB  DropTB ListTB InsertInTB  SelectFromTB  DeleteFromTB  UpdateFromTB Back
         do
+
+            echo "$PS3@$DBName>>"
             case $i in
             
                 CreateTB )
@@ -352,23 +346,17 @@ function secondScreen(){
                 ListTB )
                     
                     listTB;
-
-
                 ;;
 
                 InsertInTB )
 
-                        
                 ;;
                 #----------------------------------------------
-                SelectFromTB )
-                    
+                SelectFromTB )                    
                     
                 ;;
                 #---------------------------------------
-                DeleteFromTB )
-                    
-                    
+                DeleteFromTB )                   
                 ;;
                 #---------------------------------------
                 UpdateFromTB )
@@ -380,6 +368,7 @@ function secondScreen(){
                     echo "Back"
                     cd ..
                     break
+                    echo "------------------"
                     mainMenu;                   
                 ;;
                 *)
