@@ -282,37 +282,51 @@ function listTB(){
 }
 
 #------------------------select Tables--------------------------
-read -p "Please Enter Table Name : " $Tbname
+function selectTB(){
+        read -p "Please Enter Table Name : " Tbname
+        
+        if [[ $Tbname = "" ]];then
+                echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
+        
+        elif ! [ -f $Tbname ];then
+                echo -e "\e[41m This Table Doesn't Exist\e[0m"
+        
+        elif [ -f $Tbname ];then
+        EXIT="0"
+        while [[ $EXIT != "1" ]] 
+            do
+                select i in All ById ByColumn Exit
+                   do
+                       case $i in
+                        All ) 
+                           cat $Tbname
+                           break
+                        ;;
+                        ById )
+                           read -p "Please Enter ID : " ID
+                           cat $Tbname |  awk -v ID=$ID -F ":" '$1==ID { print $0 }'
+                           break
+                        ;;
+                        ByColumn )
 
-if [[ $Tbname = "" ]];then
-        echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
-
-elif ! [ -f $Tbname ];then
-        echo -e "\e[41m This Table Doesn't Exist\e[0m"
-
-elif [ -f $Tbname ];then
-     select i in All ById Exit
-        do
-            case $i in
-            All ) 
-                cat $Tbname
-                break
-            ;;
-            ById )
-                read -p "Please Enter ID : " ID
-                cat $Tbname | awk '{ if ($1 == '"'$ID'"' ) print $0 }'
-                break
-            ;;
-            Exit )
-                
-            ;;   
-            esac
+                            read -p "Please Enter column name : " col
                             
-         done
+                            cat $Tbname |  awk -F ":" '{ print $2 }'    
+                        ;;
+                    
 
-fi
+                       Exit )
+                           EXIT="1"
+                           echo "Exit"
+                            break
+                       ;;   
+                       esac
+                                       
+                    done
+            done
+        fi
 
-
+}
 #--------------Main Menu----------------------------------
 
 
@@ -414,7 +428,7 @@ function secondScreen(){
                 #----------------------------------------------
                 SelectFromTB )
                     
-                    
+                    selectTB;
                 ;;
                 #---------------------------------------
                 DeleteFromTB )
