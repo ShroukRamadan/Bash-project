@@ -142,7 +142,7 @@ function createTB(){
 		    echo -e "\e[41m Please Enter a Number Only \e[0m"
         fi
         
-        delimeter=":"
+        export delimeter=":"
         lineDel="\n"
         pk=""
 
@@ -308,7 +308,8 @@ function insertInTB(){
     for ((i=1 ;i<=$numCols-1; (i++) ))
     do
        read -p "Enter value of ${NameofCols[$i]} with datatype  ${TypeofCols[$i]} : " dataRecord
-       echo dataRecord >>$tbname
+       dataRecord=$dataRecord$delimeter
+       echo $dataRecord >>$tbname
     
     done      
 
@@ -318,10 +319,7 @@ function insertInTB(){
 }
 
 #----------------DeleteFromTB----------------------------
-function deleteAll(){
 
-
-}
 
 function deleteFromTB(){
     read -p "Enter Table Name: " tbname
@@ -335,9 +333,27 @@ function deleteFromTB(){
             case $option in 
             DeleteAll )
               sed -i '2,$d' ./$tbname
+              echo -e "\033[42m Data Deleted Sucessfully ^_^ \033[m" #green
+
             ;;
             DeleteColumn )
+             
+              read -p "Enter Column Name You Want to delect: " colName
+              declare -A NameofCols
+              NameofCols=$(sed '1d' ./$tbname | awk -F : '
+              {
+                print ($1)
+               }' )
+               if [[ ${NameofCols[*]} =~ $colName ]];then
+                    index=${NameofCols["$colName"]}
+                    cut -f$index -d: ./$tbname
+                    echo -e "\033[42m $colName Deleted Sucessfully ^_^ \033[m" #green
+                   
 
+               else
+                    echo -e "\033[41mColumn Not Exist \033[m"     
+
+               fi
             ;;
             DaleteRecord )
 
@@ -354,9 +370,6 @@ function deleteFromTB(){
 
 
     fi
-
-
-
 
 }
 
@@ -461,7 +474,7 @@ function secondScreen(){
                 ;;
                 #---------------------------------------
                 DeleteFromTB ) 
-                  deleteAll;                  
+                  deleteFromTB;                  
                 ;;
                 #---------------------------------------
                 UpdateFromTB )
