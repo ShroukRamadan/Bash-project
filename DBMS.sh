@@ -282,9 +282,11 @@ function insertInTB(){
         echo -e "\033[41m Sorry Table Not Exist \033[m"
 
     fi      
-    numCols=$(awk -F : '{ 
-        print (NF)
-    }' ./$tbname)
+    # numCols=$(awk -F : '{ 
+    #     print (NF)
+    # }' ./$tbname)
+    typeset -i numCols
+    numCols=$(wc -l ./"metadata_"$tbname)-1
 
     declare -A NameofCols
     NameofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
@@ -305,7 +307,7 @@ function insertInTB(){
     # }
     # ' )
 
-    for ((i=1 ;i<=$numCols-1; (i++) ))
+    for ((i=1 ;i<=$numCols; (i++) ))
     do
        read -p "Enter value of ${NameofCols[$i]} with datatype  ${TypeofCols[$i]} : " dataRecord
        dataRecord=$dataRecord$delimeter
@@ -328,42 +330,59 @@ function deleteFromTB(){
     else
 
         echo "---------------------"
-        select option in DeleteAll DeleteColumn DaleteRecord
-        do
-            case $option in 
-            DeleteAll )
-              sed -i '2,$d' ./$tbname
-              echo -e "\033[42m Data Deleted Sucessfully ^_^ \033[m" #green
+        Back="0"
 
-            ;;
-            DeleteColumn )
-             
-              read -p "Enter Column Name You Want to delect: " colName
-              declare -A NameofCols
-              NameofCols=$(sed '1d' ./$tbname | awk -F : '
-              {
-                print ($1)
-               }' )
-               if [[ ${NameofCols[*]} =~ $colName ]];then
-                    index=${NameofCols["$colName"]}
-                    cut -f$index -d: ./$tbname
-                    echo -e "\033[42m $colName Deleted Sucessfully ^_^ \033[m" #green
-                   
+        while [[ $Back != "1" ]]  
+        do 
 
-               else
-                    echo -e "\033[41mColumn Not Exist \033[m"     
+            select option in DeleteAll DaleteRecord Back
+            do
+                case $option in 
+                DeleteAll )
 
-               fi
-            ;;
-            DaleteRecord )
+                sed -i '2,$d' ./$tbname
+                echo -e "\033[42m Data Deleted Sucessfully ^_^ \033[m" #green
 
-            ;;
+                ;;
+                # DeleteColumn )
+                
+                #   read -p "Enter Column Name You Want to delect: " colName
+                #   declare -A NameofCols
+                #   NameofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
+                #   {
+                #     print ($1)
+                #    }' )
+                #     touch .error
+                #     if [[  $colName =~ ${NameofCols[*]} ]];then
+                #         index=${NameofCols["$colName"]}
+                #         cut -f$index -d: ./$tbname >> ./.error
+                #         echo -e "\033[42m $colName Deleted Sucessfully ^_^ \033[m" #green
+                #     else
+                #         echo -e "\033[41mColumn Not Exist \033[m"     
 
-            * )
-                echo -e "\033[41m Wrong Choice, Please Enter Number From 1 to 3 : \033[m" #red
+                #    fi
+                # ;;
 
-            ;;
-            esac 
+                DaleteRecord )
+                
+
+                ;;
+
+                Back )
+
+                 Back="1"
+                 echo "Back"
+                 secondScreen;
+
+                ;;
+
+                * )
+                    echo -e "\033[41m Wrong Choice, Please Enter Number From 1 to 3 : \033[m" #red
+
+                ;;
+                esac 
+
+            done
 
         done
          
@@ -373,7 +392,67 @@ function deleteFromTB(){
 
 }
 
+#------------------------select Tables--------------------------
 
+
+function selectTB(){
+        read -p "Please Enter Table Name : " Tbname
+        
+        if [[ $Tbname = "" ]];then
+                echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
+        
+        elif ! [ -f $Tbname ];then
+                echo -e "\e[41m This Table Doesn't Exist\e[0m"
+        
+        elif [ -f $Tbname ];then
+        EXIT="0"
+        while [[ $EXIT != "1" ]] 
+            do
+                select i in SelectAll SelectRecord SelectColumn Exit
+                   do
+                       case $i in
+                        SelectAll ) 
+                           cat $Tbname
+                           break
+                        ;;
+                        SelectRecord )
+                           read -p "Please Enter ID : " ID
+                           cat $Tbname |  awk -v ID=$ID -F ":" '$1==ID { print $ }'
+                           break
+                        ;;
+                        SelectColumn )
+
+                            # read -p "Please Enter column name : " col            
+                            # cat $Tbname |  awk -F ":" '{ print $2 }'
+                              read -p "Enter Column Name You Want to select: " colName
+                              declare -A NameofCols
+                              NameofCols=$(sed '1d' ./"metadata_"$Tbname | awk -F : '
+                              {
+                                print ($1)
+                               }' )
+                               echo $colName
+                                if [[ ${NameofCols[*]} =~ $colName ]];then
+                                    index=${NameofCols["$colName"]}
+                                    cat ./$Tbname | $( awk -F : ' { print $index } ')
+                                else
+                                    echo -e "\033[41mColumn Not Exist \033[m"     
+
+                               fi    
+                        ;;
+                    
+
+                       Exit )
+                           EXIT="1"
+                           echo "Exit"
+                            break
+                       ;;   
+                       esac
+                                       
+                    done
+            done
+        fi
+
+}
 
 #--------------Main Menu----------------------------------
 
@@ -469,7 +548,8 @@ function secondScreen(){
 
                 ;;
                 #----------------------------------------------
-                SelectFromTB )                    
+                SelectFromTB ) 
+                  selectTB;                   
                     
                 ;;
                 #---------------------------------------
