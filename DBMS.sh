@@ -150,7 +150,7 @@ function createTB(){
 
 
         if [[ $colsNum = [0-9] ]];then
-        
+                
             
             for ((i=1 ;i<=$colsNum; (i++) ))
             do
@@ -281,6 +281,36 @@ function listTB(){
     echo "------------------"
 }
 
+#------------------------select Tables--------------------------
+read -p "Please Enter Table Name : " $Tbname
+
+if [[ $Tbname = "" ]];then
+        echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
+
+elif ! [ -f $Tbname ];then
+        echo -e "\e[41m This Table Doesn't Exist\e[0m"
+
+elif [ -f $Tbname ];then
+     select i in All ById Exit
+        do
+            case $i in
+            All ) 
+                cat $Tbname
+                break
+            ;;
+            ById )
+                read -p "Please Enter ID : " ID
+                cat $Tbname | awk '{ if ($1 == '"'$ID'"' ) print $0 }'
+                break
+            ;;
+            Exit )
+                
+            ;;   
+            esac
+                            
+         done
+
+fi
 
 
 #--------------Main Menu----------------------------------
