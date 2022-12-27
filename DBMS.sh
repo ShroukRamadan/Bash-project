@@ -1,3 +1,6 @@
+#!/usr/bin/bash
+
+
 #--------------------------Create Database-----------------------------------------------
 
 
@@ -95,8 +98,11 @@ function connectDB(){
         pwd
         echo -e "\033[42m Connection Done Sucessfully ^_^ \033[m"  #green
         echo "------------------"
+        export DBName=$name
+        # $PS3="MySql@$name>>"
+        # echo "$PS3"
         secondScreen;
-        #PS3= "$name >>"        
+             
         #-----------------------------
     else 
         echo -e " \033[41m Sorry DataBase Not Exist \033[m"
@@ -109,30 +115,24 @@ function connectDB(){
 
 #---------------------------Create Table--------------------------------------------------
 
-function createTB(){
-
-                
+function createTB(){                
     read -p "Enter Table Name You Want To Create : " Tbname 
-    if [[ $Tbname = "" ]];then
+    if [[ $Tbname = " " ]];then
         echo -e "\033[44m Null Entry, Please Enter a Correct Name \033[m" #blue
-    
+
     
     elif [ -e $Tbname ];then 
         echo -e "\033[43m Sorry Please Enter Another Name This Is Exist ~_~ \033[m" #
 
-    # elif [[ $Tbname == $DbName ]];then
-    #     echo -e "\033[43m Sorry It's Name of DataBase, Please Enter Another  ~_~ \033[m" #
+    elif [[ $Tbname == $DBName ]];then
+        echo -e "\033[43m Sorry It's Name of DataBase, Please Enter Another  ~_~ \033[m" #
         
     elif [[ $Tbname == *" "* ]];then
-        echo -e "\033[41m Table Name Can't Contain Spaces \033[m" #red
+        echo -e "\033[41m Table Name can't contain spaces \033[m" #red
         
     
     elif [[ $Tbname =~ ^[a-zA-Z] ]];then
-        
-
-        touch $Tbname
-        touch metadata_$Tbname
-
+               
         read -p "Enter Number Of Columns You Want : " colsNum
         if [[ $colsNum = "" ]];then
             echo -e "\033[44m Null Entry,Please Enter a Number Only \033[m" #blue
@@ -142,47 +142,37 @@ function createTB(){
 		    echo -e "\e[41m Please Enter a Number Only \e[0m"
         fi
         
-        delimeter=":"
+        export delimeter=":"
         lineDel="\n"
         pk=""
 
         metaData="ColumName"$delimeter"DataType"$delimeter"PrimaryKey"
-
-
-        if [[ $colsNum = [0-9] ]];then
-                
-            
+        
+        if [[ $colsNum =~ ^[1-90-9] ]];then        
             for ((i=1 ;i<=$colsNum; (i++) ))
             do
                 read -p "Name of Column No.$i: " colName
-                if [[ $colName = "" ]];then
-                    echo -e "\033[44m Null Entry,Please Enter a Correct Name \033[m" #blue
-                    break
-                elif [[ $colName =~ [0-9] ]];then
-                     echo -e "\e[41m Please Enter a Number Only \e[0m" #red
-                     break
-                elif [[ $colName =~ [/.:\|\-$%*';'] ]];then
-		            echo -e "\e[41m Please Enter a Number Only \e[0m"
-                    break
-                fi
                 
                 echo -e "Type of Column $colName: "
                 select ch in INT STR
                 do
-                    case $ch in
-                        INT )
+                    case $ch in 
+                    
+                    INT )
                         colType="int";
                         break                               
                         ;;
-                        STR ) 
+                    STR ) 
                         colType="str";
                         break
                         ;;
-                        # * )
-                        # echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2: \033[m" #red
-                        # ;;
+                        * )
+                        echo -e "\033[41m Wrong Choice, Please Enter Number 1 OR 2: \033[m" #red
+
+                        ;;
                     esac
-                done
+
+                done       
                 
                 if [[ $pk == "" ]]; then
                     echo -e "Make PrimaryKey ? "
@@ -205,27 +195,28 @@ function createTB(){
                         esac
                     done
                 else
-                    metaData+=$rSep$colName$sep$colType$sep""
+                    metaData+=$lineDel$colName$delimeter$colType$delimeter""
                 fi
                 
-                if [[ $count == $colsNum ]]; then
-                    temp=$temp$colName
+                if [[ $i == $colsNum ]]; then
+                    temp=$temp$colName$delimeter
                 else
-                    temp=$temp$colName$sep
+                    temp=$temp$colName                    
                 fi
             done
             
+            touch $Tbname  
+            touch metadata_$Tbname
             echo -e $metaData  >> metadata_$Tbname
             echo -e $temp >> $Tbname
-            if [[ $? == 0 ]];then
-                echo -e "\033[42m Table Created  Sucessfully ^_^ \033[m" #green
-                secondScreen;
+            #if [[ $? == 0 ]];then
+            echo -e "\033[42m Table Created  Sucessfully ^_^ \033[m" #green
+            secondScreen;
 
-            fi
-
+            #fi
         
+        fi    
 
-        fi      
 
     else
         echo -e "\033[41m Table Name can't start with numbers or special characters \033[m" #red
@@ -280,7 +271,6 @@ function listTB(){
     ls -p  |grep -v '_' 
     echo "------------------"
 }
-
 #------------------------select Tables--------------------------
 function selectTB(){
         read -p "Please Enter Table Name : " Tbname
@@ -327,33 +317,131 @@ function selectTB(){
         fi
 
 }
+#------------------------------------------
+
+#---------------Insert Into Table----------------------
+
+function insertInTB(){
+    pwd 
+    read -p "Enter Table Name: " tbname
+    if ! [[ -f $tbname ]];then
+        echo -e "\033[41m Sorry Table Not Exist \033[m"
+
+    fi      
+    numCols=$(awk -F : '{ 
+        print (NF)
+    }' ./$tbname)
+
+    declare -A NameofCols
+    NameofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
+    {
+        print ($1)
+    }
+    ' )
+    declare -A TypeofCols
+    TypeofCols=$(sed '1d' ./"metadata_"$tbname | awk -F : '
+    {
+        print ($2)
+    }
+    ' )
+
+    # numColumns=$(head -1 $tbname | awk -F : '
+    # {
+    #     print NF
+    # }
+    # ' )
+
+    for ((i=1 ;i<=$numCols-1; (i++) ))
+    do
+       read -p "Enter value of ${NameofCols[$i]} with datatype  ${TypeofCols[$i]} : " dataRecord
+       dataRecord=$dataRecord$delimeter
+       echo $dataRecord >>$tbname
+    
+    done      
+
+
+
+
+}
+
+#----------------DeleteFromTB----------------------------
+
+
+function deleteFromTB(){
+    read -p "Enter Table Name: " tbname
+    if ![[ -f tbname ]];then
+        echo -e "\033[41m Sorry Table Not Exist \033[m"
+    else
+
+        echo "---------------------"
+        select option in DeleteAll DeleteColumn DaleteRecord
+        do
+            case $option in 
+            DeleteAll )
+              sed -i '2,$d' ./$tbname
+              echo -e "\033[42m Data Deleted Sucessfully ^_^ \033[m" #green
+
+            ;;
+            DeleteColumn )
+             
+              read -p "Enter Column Name You Want to delect: " colName
+              declare -A NameofCols
+              NameofCols=$(sed '1d' ./$tbname | awk -F : '
+              {
+                print ($1)
+               }' )
+               if [[ ${NameofCols[*]} =~ $colName ]];then
+                    index=${NameofCols["$colName"]}
+                    cut -f$index -d: ./$tbname
+                    echo -e "\033[42m $colName Deleted Sucessfully ^_^ \033[m" #green
+                   
+
+               else
+                    echo -e "\033[41mColumn Not Exist \033[m"     
+
+               fi
+            ;;
+            DaleteRecord )
+
+            ;;
+
+            * )
+                echo -e "\033[41m Wrong Choice, Please Enter Number From 1 to 3 : \033[m" #red
+
+            ;;
+            esac 
+
+        done
+         
+
+
+    fi
+
+}
+
+
+
 #--------------Main Menu----------------------------------
 
 
 function mainMenu(){
-
-
-
     EXIT="0"
     while [[ $EXIT != "1" ]] 
-    do  
+    do 
+        export PS3="MySql>>"
         select i in CreateDB ListDB ConnectDB DropDB Exit
         do
+            
             case $i in
             
                 CreateDB )
 
                     createDb;
-
-
                 ;;
     
                 #-------------------------------------------------------
                 DropDB )
-
-                    dropDB;
-                        
-                
+                    dropDB;                
                 ;;
                 #-------------------------------------------------------------
                 ListDB )
@@ -396,10 +484,13 @@ function secondScreen(){
     Back="0"
 
     while [[ $Back != "1" ]]  
-    do  
+    do 
 
+        PS3=$PS3"$DBName>>"
+        #echo $PS3
         select i in  CreateTB  DropTB ListTB InsertInTB  SelectFromTB  DeleteFromTB  UpdateFromTB Back
         do
+
             case $i in
             
                 CreateTB )
@@ -417,23 +508,19 @@ function secondScreen(){
                 ListTB )
                     
                     listTB;
-
-
                 ;;
 
                 InsertInTB )
+                   insertInTB;
 
-                        
                 ;;
                 #----------------------------------------------
-                SelectFromTB )
-                    
+                SelectFromTB )                    
                     selectTB;
                 ;;
                 #---------------------------------------
-                DeleteFromTB )
-                    
-                    
+                DeleteFromTB ) 
+                  deleteFromTB;                  
                 ;;
                 #---------------------------------------
                 UpdateFromTB )
@@ -445,6 +532,8 @@ function secondScreen(){
                     echo "Back"
                     cd ..
                     break
+                    echo "------------------"
+                    PS3="MySql>>"
                     mainMenu;                   
                 ;;
                 *)
