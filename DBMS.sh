@@ -1,6 +1,5 @@
 #!usr/bin/bash
 
-#!/usr/bin/bash
 
 
 #--------------------------Create Database-----------------------------------------------
@@ -277,6 +276,22 @@ function listTB(){
 
 #---------------Insert Into Table----------------------
 
+# function insertTB(){
+#     echo "this is all tables"
+#     ls
+#     read -p "Enter Table Name : " tbname
+#     if ! [[ -f $tbname ]]; then 
+#         echo "Table $tbname isn't existed "
+
+#     elif [ -f $tbname ]; then   
+#     cat metadata_$Tbname | awk -F : '{ print "enter value of $1 , type = $2" }'
+#          echo $values >> $db_name/$tableName
+    
+#     fi
+# }
+
+
+#---------------------------------------------------------
 function insertInTB(){
     pwd 
     read -p "Enter Table Name: " tbname
