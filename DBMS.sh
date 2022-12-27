@@ -1,3 +1,6 @@
+#!/usr/bin/bash
+
+
 #--------------------------Create Database-----------------------------------------------
 
 
@@ -130,11 +133,21 @@ function createTB(){
     
     elif [[ $Tbname =~ ^[a-zA-Z] ]];then
                
-        read -p "Enter Number of Columns You want : " colsNum
+        read -p "Enter Number Of Columns You Want : " colsNum
+        if [[ $colsNum = "" ]];then
+            echo -e "\033[44m Null Entry,Please Enter a Number Only \033[m" #blue
+        elif [[ $colsNum =~ ^[a-zA-Z] ]];then
+            echo -e "\e[41m Please Enter a Number Only \e[0m" #red
+        elif [[ $colsNum =~ [/.:\|\-$%*';'] ]];then
+		    echo -e "\e[41m Please Enter a Number Only \e[0m"
+        fi
+        
         delimeter=":"
         lineDel="\n"
         pk=""
+
         metaData="ColumName"$delimeter"DataType"$delimeter"PrimaryKey"
+        
         if [[ $colsNum =~ ^[1-90-9] ]];then        
             for ((i=1 ;i<=$colsNum; (i++) ))
             do
@@ -143,12 +156,13 @@ function createTB(){
                 echo -e "Type of Column $colName: "
                 select ch in INT STR
                 do
-                    case $ch in
-                        INT )
+                    case $ch in 
+                    
+                    INT )
                         colType="int";
                         break                               
                         ;;
-                        INT ) 
+                    STR ) 
                         colType="str";
                         break
                         ;;
@@ -181,13 +195,13 @@ function createTB(){
                         esac
                     done
                 else
-                    metaData+=$rSep$colName$sep$colType$sep""
+                    metaData+=$lineDel$colName$delimeter$colType$delimeter""
                 fi
                 
                 if [[ $count == $colsNum ]]; then
                     temp=$temp$colName
                 else
-                    temp=$temp$colName$sep
+                    temp=$temp$colName$delimeter
                 fi
             done
             
@@ -259,6 +273,30 @@ function listTB(){
 }
 
 
+#---------------Insert Into Table----------------------
+
+function insertInTB(){
+    pwd
+    read -p "Enter Table Name:" $tbname
+    if [[ -z $tbname ]];then
+        numCols=$( awk 'END{print NR-1}' metadata_$tbname )
+        for (( i=1 ;i<=$numCols; (i++) ));
+        do
+             echo "x"
+        done
+    else
+        echo -e " \033[41m Sorry Table Not Exist \033[m"
+
+        
+
+
+
+    fi
+
+
+}
+
+
 
 #--------------Main Menu----------------------------------
 
@@ -267,11 +305,10 @@ function mainMenu(){
     EXIT="0"
     while [[ $EXIT != "1" ]] 
     do 
-        
+        export PS3="MySql>>"
         select i in CreateDB ListDB ConnectDB DropDB Exit
         do
-            export PS3="MySql"
-            echo "$PS3>>"
+            
             case $i in
             
                 CreateDB )
@@ -325,10 +362,12 @@ function secondScreen(){
 
     while [[ $Back != "1" ]]  
     do 
+
+        PS3=$PS3"$DBName>>"
+        #echo $PS3
         select i in  CreateTB  DropTB ListTB InsertInTB  SelectFromTB  DeleteFromTB  UpdateFromTB Back
         do
 
-            echo "$PS3@$DBName>>"
             case $i in
             
                 CreateTB )
@@ -349,6 +388,7 @@ function secondScreen(){
                 ;;
 
                 InsertInTB )
+                   insertInTB;
 
                 ;;
                 #----------------------------------------------
@@ -369,6 +409,7 @@ function secondScreen(){
                     cd ..
                     break
                     echo "------------------"
+                    PS3="MySql>>"
                     mainMenu;                   
                 ;;
                 *)
